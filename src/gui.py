@@ -45,15 +45,24 @@ def test():
     auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_key, access_secret)
     api = tweepy.API(auth)
-    tweets = api.search(q="UED", count=10)
-    for tweet in tweets:
-        print(tweet.text, "\n")
+    account_id = "nisizaki"
+    processedTweets = [] #RTを除外、リプライの@～を削除、リンクのhttp～を除外
+    for page in range(1,17):
+        tweets = api.user_timeline(account_id, count=200, page=page)
+        for tweet in tweets:
+            text = tweet.text
+            if not re.match(r"^RT.*", text) and not re.match(r"^http.*", text):
+                text = re.sub(r"@.* ", "", text)
+                text = re.sub(r" http.*", "", text)
+                processedTweets.append(text)
 
+    for tweet_text in processedTweets:
+        print(tweet_text, "\n")
 
 def run():
     global root
     root = tk.Tk()
-    root.title("オーキド博士")
+    root.title("twitter-GAN")
     root.geometry("800x600+1000+10")
     root.protocol("WM_DELETE_WINDOW", root.quit)
     button = tk.Button(root, text="ファイル送信", command=pushed)
