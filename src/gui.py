@@ -8,6 +8,7 @@ from tkinter import messagebox, filedialog
 import json
 import config
 import tweepy
+import pickle
 
 # 同じディレクトリにconfig.pyを作成し、以下の値を定義しておく
 consumer_key = config.CONSUMER_KEY
@@ -41,7 +42,10 @@ def pushed():
         print("それ以外です")
 
 
-def test():
+def GAN(processedTweets):
+    print(processedTweets)
+
+def getTweets():
     auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_key, access_secret)
     api = tweepy.API(auth)
@@ -51,13 +55,12 @@ def test():
         tweets = api.user_timeline(account_id, count=200, page=page)
         for tweet in tweets:
             text = tweet.text
-            if not re.match(r"^RT.*", text) and not re.match(r"^http.*", text):
-                text = re.sub(r"@.* ", "", text)
-                text = re.sub(r" http.*", "", text)
+            if not re.match(r"^RT.*", text) and not re.match(r"^https?://[\w/:%#\$&\?\(\)~\.=\+\-]+", text):
+                text = re.sub(r"@(.|_)* ", "", text)
+                text = re.sub(r"https?://[\w/:%#\$&\?\(\)~\.=\+\-]+", "", text)
                 processedTweets.append(text)
 
-    for tweet_text in processedTweets:
-        print(tweet_text, "\n")
+    
 
 def run():
     global root
@@ -66,7 +69,7 @@ def run():
     root.geometry("800x600+1000+10")
     root.protocol("WM_DELETE_WINDOW", root.quit)
     button = tk.Button(root, text="ファイル送信", command=pushed)
-    testbutton = tk.Button(root, text="test", command=test)
+    testbutton = tk.Button(root, text="test", command=getTweets)
     button.pack()
     testbutton.pack()
     root.mainloop()
